@@ -10,16 +10,10 @@ Developer TODO: Update the below as needed to correctly describe the install pro
 
 ## Installation
 
-Install from PyPI:
-
-```bash
-uv tool install tap-tempo
-```
-
 Install from GitHub:
 
 ```bash
-uv tool install git+https://github.com/ORG_NAME/tap-tempo.git@main
+uv tool install git+https://github.com/Broscorp-net/tap-tempo@main
 ```
 
 -->
@@ -28,21 +22,55 @@ uv tool install git+https://github.com/ORG_NAME/tap-tempo.git@main
 
 ### Accepted Config Options
 
-<!--
-Developer TODO: Provide a list of config options accepted by the tap.
+#### Capabilities
 
-This section can be created by copy-pasting the CLI output from:
+- `catalog`
+- `state`
+- `discover`
+- `activate-version`
+- `about`
+- `stream-maps`
+- `schema-flattening`
+- `batch`
 
-```
-tap-tempo --about --format=markdown
-```
--->
+#### Supported Python Versions
+
+- 3.10
+- 3.11
+- 3.12
+- 3.13
+- 3.14
+
+#### Settings
+
+| Setting | Required | Default | Description |
+|:--------|:--------:|:-------:|:------------|
+| auth_token | True | None | The token to authenticate against the API service |
+| start_date | False | None | The earliest record date to sync |
+| api_url | False | https://api.tempo.io/4 | The url for the API service |
+| user_agent | False | None | A custom User-Agent header to send with each request. Default is '<tap_name>/<tap_version>' |
+| stream_maps | False | None | Config object for stream maps capability. For more information check out [Stream Maps](https://sdk.meltano.com/en/latest/stream_maps.html). |
+| stream_maps.__else__ | False | None | Currently, only setting this to `__NULL__` is supported. This will remove all other streams. |
+| stream_map_config | False | None | User-defined config values to be used within map expressions. |
+| faker_config | False | None | Config for the [`Faker`](https://faker.readthedocs.io/en/master/) instance variable `fake` used within map expressions. Only applicable if the plugin specifies `faker` as an additional dependency (through the `singer-sdk` `faker` extra or directly). |
+| faker_config.seed | False | None | Value to seed the Faker generator for deterministic output: https://faker.readthedocs.io/en/master/#seeding-the-generator |
+| faker_config.locale | False | None | One or more LCID locale strings to produce localized output for: https://faker.readthedocs.io/en/master/#localization |
+| flattening_enabled | False | None | 'True' to enable schema flattening and automatically expand nested properties. |
+| flattening_max_depth | False | None | The max depth to flatten schemas. |
+| batch_config | False | None | Configuration for BATCH message capabilities. |
+| batch_config.encoding | False | None | Specifies the format and compression of the batch files. |
+| batch_config.encoding.format | False | None | Format to use for batch files. |
+| batch_config.encoding.compression | False | None | Compression format to use for batch files. |
+| batch_config.storage | False | None | Defines the storage layer to use when writing batch files |
+| batch_config.storage.root | False | None | Root path to use when writing batch files. |
+| batch_config.storage.prefix | False | None | Prefix to use when writing batch files. |
+
 
 A full list of supported settings and capabilities for this
 tap is available by running:
 
 ```bash
-tap-tempo --about
+tap-tempo --about --format=markdown
 ```
 
 ### Configure using environment variables
@@ -53,9 +81,7 @@ environment variable is set either in the terminal context or in the `.env` file
 
 ### Source Authentication and Authorization
 
-<!--
-Developer TODO: If your tap requires special access on the source system, or any special authentication requirements, provide those here.
--->
+Bearer token is used for authorization. See more details: https://apidocs.tempo.io/#section/Authentication
 
 ## Usage
 
@@ -103,12 +129,6 @@ uv run tap-tempo --help
 
 _**Note:** This tap will work in any Singer environment and does not require Meltano.
 Examples here are for convenience and to streamline end-to-end orchestration scenarios._
-
-<!--
-Developer TODO:
-Your project comes with a custom `meltano.yml` project file already created. Open the `meltano.yml` and follow any "TODO" items listed in
-the file.
--->
 
 Next, install Meltano (if you haven't already) and any needed plugins:
 

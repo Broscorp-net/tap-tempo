@@ -8,7 +8,7 @@ from tap_tempo.tap import TapTempo
 
 SAMPLE_CONFIG = {
     "start_date": datetime.datetime.now(datetime.timezone.utc).strftime("%Y-%m-%d"),
-    # TODO: Initialize minimal tap config
+    "api_url": "https://api.tempo.io/4"
 }
 
 
@@ -17,6 +17,3 @@ TestTapTempo = get_tap_test_class(
     tap_class=TapTempo,
     config=SAMPLE_CONFIG,
 )
-
-
-# TODO: Create additional tests as appropriate for your tap.

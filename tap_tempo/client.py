@@ -5,11 +5,10 @@ from __future__ import annotations
 import decimal
 import sys
 import typing as t
-from importlib import resources
 
 from singer_sdk.authenticators import BearerTokenAuthenticator
 from singer_sdk.helpers.jsonpath import extract_jsonpath
-from singer_sdk.pagination import BaseAPIPaginator  # noqa: TC002
+from singer_sdk.pagination import BaseAPIPaginator, BaseHATEOASPaginator  # noqa: TC002
 from singer_sdk.streams import RESTStream
 
 if sys.version_info >= (3, 12):
@@ -22,25 +21,23 @@ if t.TYPE_CHECKING:
     from singer_sdk.helpers.types import Context
 
 
-# TODO: Delete this is if not using json files for schema definition
-SCHEMAS_DIR = resources.files(__package__) / "schemas"
+class TempoPaginator(BaseHATEOASPaginator):
+    def get_next_url(self, response):
+        return response.json().get("metadata.next")
 
 
 class TempoStream(RESTStream):
     """Tempo stream class."""
 
-    # Update this value if necessary or override `parse_response`.
-    records_jsonpath = "$[*]"
+    records_jsonpath = "$.results[*]"
 
-    # Update this value if necessary or override `get_new_paginator`.
-    next_page_token_jsonpath = "$.next_page"  # noqa: S105
+    next_page_token_jsonpath = "$.metadata.next"  # noqa: S105
 
     @override
     @property
     def url_base(self) -> str:
         """Return the API URL root, configurable via tap settings."""
-        # TODO: hardcode a value here, or retrieve it from self.config
-        return "https://api.mysample.com"
+        return self.config["api_url"]
 
     @override
     @property
@@ -52,7 +49,7 @@ class TempoStream(RESTStream):
         """
         return BearerTokenAuthenticator.create_for_stream(
             self,
-            token=self.config.get("auth_token", ""),
+            token=self.config["auth_token"],
         )
 
     @property
@@ -63,9 +60,10 @@ class TempoStream(RESTStream):
         Returns:
             A dictionary of HTTP headers.
         """
-        # If not using an authenticator, you may also provide inline auth headers:
-        # headers["Private-Token"] = self.config.get("auth_token")  # noqa: ERA001
-        return {}
+        headers = {
+            "Content-Type": "application/json"
+        }
+        return headers
 
     @override
     def get_new_paginator(self) -> BaseAPIPaginator | None:
@@ -82,7 +80,7 @@ class TempoStream(RESTStream):
             A pagination helper instance, or ``None`` to indicate pagination
             is not supported.
         """
-        return super().get_new_paginator()
+        return TempoPaginator()
 
     @override
     def get_url_params(
@@ -99,33 +97,14 @@ class TempoStream(RESTStream):
         Returns:
             A dictionary of URL query parameters.
         """
-        params: dict = {}
+
+        params: dict = {"updatedFrom": self.get_starting_timestamp(context).strftime("%Y-%m-%dT%H:%M:%SZ"),
+                        "orderBy": "UPDATED"
+                        }
+
         if next_page_token:
-            params["page"] = next_page_token
-        if self.replication_key:
-            params["sort"] = "asc"
-            params["order_by"] = self.replication_key
+            params["offset"] = next_page_token
         return params
-
-    @override
-    def prepare_request_payload(
-        self,
-        context: Context | None,
-        next_page_token: t.Any | None,
-    ) -> dict | None:
-        """Prepare the data payload for the REST API request.
-
-        By default, no payload will be sent (return None).
-
-        Args:
-            context: The stream context.
-            next_page_token: The next page index or value.
-
-        Returns:
-            A dictionary with the JSON body for a POST requests.
-        """
-        # TODO: Delete this method if no payload is required. (Most REST APIs.)
-        return None
 
     @override
     def parse_response(self, response: requests.Response) -> t.Iterable[dict]:
@@ -137,29 +116,7 @@ class TempoStream(RESTStream):
         Yields:
             Each record from the source.
         """
-        # TODO: Parse response body and return a set of records.
         yield from extract_jsonpath(
             self.records_jsonpath,
             input=response.json(parse_float=decimal.Decimal),
         )
-
-    @override
-    def post_process(
-        self,
-        row: dict,
-        context: Context | None = None,
-    ) -> dict | None:
-        """As needed, append or transform raw data to match expected structure.
-
-        Note: As of SDK v0.47.0, this method is automatically executed for all stream types.
-        You should not need to call this method directly in custom `get_records` implementations.
-
-        Args:
-            row: An individual record from the stream.
-            context: The stream context.
-
-        Returns:
-            The updated record dictionary, or ``None`` to skip the record.
-        """
-        # TODO: Delete this method if not needed.
-        return row

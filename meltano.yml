@@ -20,14 +20,14 @@ plugins:
 
     # TODO: Declare settings and their types here:
     settings:
-    - name: username
-      label: Username
-      description: The username to use for authentication
+    - name: api_url
+      label: ApiURL
+      description: The URL for Tempo API service
 
-    - name: password
+    - name: auth_token
       kind: password
-      label: Password
-      description: The password to use for authentication
+      label: auth_token
+      description: Tempo Auth Bearer token
       sensitive: true
 
     - name: start_date
@@ -35,11 +35,9 @@ plugins:
       label: Start Date
       description: Initial date to start extracting data from
 
-    # TODO: Declare required settings here:
     settings_group_validation:
-    - [username, password]
+    - [api_url, auth_token]
 
-    # TODO: Declare default configuration values here:
     config:
       start_date: '2010-01-01T00:00:00Z'
 

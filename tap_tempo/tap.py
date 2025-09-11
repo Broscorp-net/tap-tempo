@@ -7,7 +7,6 @@ import sys
 from singer_sdk import Tap
 from singer_sdk import typing as th  # JSON schema typing helpers
 
-# TODO: Import your custom stream types here:
 from tap_tempo import streams
 
 if sys.version_info >= (3, 12):
@@ -32,13 +31,6 @@ class TapTempo(Tap):
             description="The token to authenticate against the API service",
         ),
         th.Property(
-            "project_ids",
-            th.ArrayType(th.StringType(nullable=False), nullable=False),
-            required=True,
-            title="Project IDs",
-            description="Project IDs to replicate",
-        ),
-        th.Property(
             "start_date",
             th.DateTimeType(nullable=True),
             description="The earliest record date to sync",
@@ -47,7 +39,7 @@ class TapTempo(Tap):
             "api_url",
             th.StringType(nullable=False),
             title="API URL",
-            default="https://api.mysample.com",
+            default="https://api.tempo.io/4",
             description="The url for the API service",
         ),
         th.Property(
@@ -68,8 +60,7 @@ class TapTempo(Tap):
             A list of discovered streams.
         """
         return [
-            streams.GroupsStream(self),
-            streams.UsersStream(self),
+            streams.WorklogsStream(self)
         ]
 
 

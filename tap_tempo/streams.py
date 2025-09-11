@@ -3,64 +3,52 @@
 from __future__ import annotations
 
 import typing as t
-from importlib import resources
 
 from singer_sdk import typing as th  # JSON Schema typing helpers
 
 from tap_tempo.client import TempoStream
 
-# TODO: Delete this is if not using json files for schema definition
-SCHEMAS_DIR = resources.files(__package__) / "schemas"
-# TODO: - Override `UsersStream` and `GroupsStream` with your own stream definition.
-#       - Copy-paste as many times as needed to create multiple stream types.
 
+class WorklogsStream(TempoStream):
+    """Tempo worklogs stream."""
 
-class UsersStream(TempoStream):
-    """Define custom stream."""
+    name = "worklogs"
+    path = "/worklogs"
+    primary_keys: t.ClassVar[list[str]] = ["tempoWorklogId"]
+    replication_key = "updatedAt"
+    replication_method = "INCREMENTAL"
 
-    name = "users"
-    path = "/users"
-    primary_keys: t.ClassVar[list[str]] = ["id"]
-    replication_key = None
-    # Optionally, you may also use `schema_filepath` in place of `schema`:
-    # schema_filepath = SCHEMAS_DIR / "users.json"  # noqa: ERA001
     schema = th.PropertiesList(
-        th.Property("name", th.StringType),
+        th.Property("description", th.StringType),
         th.Property(
-            "id",
-            th.StringType,
-            description="The user's system ID",
+            "tempoWorklogId",
+            th.IntegerType,
+            description="Tempo worklog ID",
+            required=True,
         ),
         th.Property(
-            "age",
-            th.IntegerType,
+            "attributes",
+            th.ObjectType(th.Property("self", th.StringType), th.Property("values", th.ArrayType(
+                th.ObjectType(th.Property("key", th.StringType), th.Property("value", th.AnyType))))),
             description="The user's age in years",
         ),
         th.Property(
-            "email",
-            th.StringType,
-            description="The user's email address",
+            "author",
+            th.ObjectType(th.Property("self", th.StringType), th.Property("accountId", th.StringType)),
         ),
-        th.Property("street", th.StringType),
-        th.Property("city", th.StringType),
         th.Property(
-            "state",
-            th.StringType,
-            description="State name in ISO 3166-2 format",
+            "issue",
+            th.ObjectType(th.Property("self", th.StringType), th.Property("id", th.IntegerType)),
         ),
-        th.Property("zip", th.StringType),
-    ).to_dict()
-
-
-class GroupsStream(TempoStream):
-    """Define custom stream."""
-
-    name = "groups"
-    path = "/groups"
-    primary_keys: t.ClassVar[list[str]] = ["id"]
-    replication_key = "modified"
-    schema = th.PropertiesList(
-        th.Property("name", th.StringType),
-        th.Property("id", th.StringType),
-        th.Property("modified", th.DateTimeType),
+        th.Property("billableSeconds", th.IntegerType),
+        th.Property("createdAt", th.DateTimeType),
+        th.Property(
+            "self",
+            th.StringType,
+            required=True,
+        ),
+        th.Property("startDate", th.DateTimeType),
+        th.Property("startDateTimeUtc", th.DateTimeType),
+        th.Property("updatedAt", th.DateTimeType),
+        th.Property("timeSpentSeconds", th.IntegerType),
     ).to_dict()
