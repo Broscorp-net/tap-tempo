@@ -50,6 +50,11 @@ class TapTempo(Tap):
                 "'<tap_name>/<tap_version>'"
             ),
         ),
+        th.Property(
+            "org_id",
+            th.StringType(nullable=True),
+            description="Organization id to stamp into each record.",
+        ),
     ).to_dict()
 
     @override

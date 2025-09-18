@@ -35,6 +35,14 @@ class TempoStream(RESTStream):
     next_page_token_jsonpath = "$.metadata.next"  # noqa: S105
 
     @override
+    def post_process(self, row: dict, context: Context | None = None) -> dict:
+        """Inject org_id into every emitted record if provided in config."""
+        org_id = self.config.get("org_id")
+        if org_id is not None:
+            row["org_id"] = org_id
+        return row
+
+    @override
     @property
     def url_base(self) -> str:
         """Return the API URL root, configurable via tap settings."""

@@ -51,4 +51,5 @@ class WorklogsStream(TempoStream):
         th.Property("startDateTimeUtc", th.DateTimeType),
         th.Property("updatedAt", th.DateTimeType),
         th.Property("timeSpentSeconds", th.IntegerType),
+        th.Property("org_id", th.StringType),
     ).to_dict()

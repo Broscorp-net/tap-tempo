@@ -116,6 +116,7 @@ Create tests within the `tests` subfolder and
 then run:
 
 ```bash
+export TAP_TEMPO_AUTH_TOKEN=your_auth_token_here
 uv run pytest
 ```
 
