@@ -50,6 +50,8 @@ jobs:
     - name: Run Tox
       run: |
         uvx --with=tox-uv tox -e $(echo py${{ matrix.python-version }} | tr -d .)
+      env:
+        TAP_TEMPO_AUTH_TOKEN: ${{ secrets.TST_TEMPO_TOKEN }}
 
   typing:
     name: Type Checking
