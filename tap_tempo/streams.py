@@ -47,7 +47,7 @@ class WorklogsStream(TempoStream):
             th.StringType,
             required=True,
         ),
-        th.Property("startDate", th.DateTimeType),
+        th.Property("startDate", th.DateType),
         th.Property("startDateTimeUtc", th.DateTimeType),
         th.Property("updatedAt", th.DateTimeType),
         th.Property("timeSpentSeconds", th.IntegerType),
