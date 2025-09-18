@@ -100,10 +100,14 @@ class TempoStream(RESTStream):
         """
 
         params: dict = {
-            "updatedFrom": self.get_starting_timestamp(context).strftime("%Y-%m-%dT%H:%M:%SZ"),
             "orderBy": "UPDATED",
             "limit": 500,
         }
+
+        starting_timestamp = self.get_starting_timestamp(context)
+        if starting_timestamp:
+            params["updatedFrom"] = starting_timestamp.strftime("%Y-%m-%dT%H:%M:%SZ")
+
 
         if next_page_token:
             params.update(parse_qsl(next_page_token.query))
