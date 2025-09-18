@@ -5,6 +5,7 @@ from __future__ import annotations
 import decimal
 import sys
 import typing as t
+from urllib.parse import parse_qsl
 
 from singer_sdk.authenticators import BearerTokenAuthenticator
 from singer_sdk.helpers.jsonpath import extract_jsonpath
@@ -23,7 +24,7 @@ if t.TYPE_CHECKING:
 
 class TempoPaginator(BaseHATEOASPaginator):
     def get_next_url(self, response):
-        return response.json().get("metadata.next")
+        return response.json().get("metadata", {}).get("next")
 
 
 class TempoStream(RESTStream):
@@ -98,12 +99,14 @@ class TempoStream(RESTStream):
             A dictionary of URL query parameters.
         """
 
-        params: dict = {"updatedFrom": self.get_starting_timestamp(context).strftime("%Y-%m-%dT%H:%M:%SZ"),
-                        "orderBy": "UPDATED"
-                        }
+        params: dict = {
+            "updatedFrom": self.get_starting_timestamp(context).strftime("%Y-%m-%dT%H:%M:%SZ"),
+            "orderBy": "UPDATED",
+            "limit": 500,
+        }
 
         if next_page_token:
-            params["offset"] = next_page_token
+            params.update(parse_qsl(next_page_token.query))
         return params
 
     @override
